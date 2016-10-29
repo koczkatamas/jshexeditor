@@ -1,0 +1,44 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="/js/autorefresh.js"></script>
+    <script>
+        $(() => {
+            var hexRow = $('.hexRow');
+            hexRow.html(hexRow.html().replace(/span>\s*<span/g, 'span><span'));
+        });
+    </script>
+    <style>
+        body {
+            font-family:Courier,monospace;
+            font-size:12px;	            
+        }
+        .cell {
+            background: red;
+            padding: 3px;
+            color: white;
+        }
+        .c00 {
+            border-radius: 4px 0 0 4px;
+        }
+        .c01 {
+            
+        }
+        .c02 {
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hexRow">
+    <span class="cell c00">AB</span>
+    <span class="cell c01">CD</span>
+    <span class="cell c02">EF</span>
+    <!--<span class="cell c03">00</span>
+    <span class="cell c04">01</span>
+    <span class="cell c05">02</span>-->
+</div>
+
+</body>
+</html>
