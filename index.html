@@ -27,10 +27,10 @@
         }
         
         dataProvider = {
-            length: 0x100000,
-            get: (offset, length) => {
+            length: 0x100000-3,
+            get(offset, length){
                 var res = [];
-                for(var i = 0; i < length; i++)
+                for (var i = 0; i < length; i++)
                     res.push((((offset + i) * 12345) % 98765) % 256);
                 return res;
             }
@@ -53,15 +53,20 @@
                 var asciiLineHtml = "", hexLineHtml = "", pos = 0;
 
                 for (var iChar = 0; iChar < bytesPerLine; iChar++) {
-                    if (pos <= bytes.length) {
+                    var ch, hexCh;
+                    if (pos < bytes.length) {
                         var bt = bytes[pos];
                         //var ch = bt == 32 ? '&nbsp;' : bt >= 32 && bt < 127 ? String.fromCharCode(bt) : '.';
-                        var ch = bt == 32 ? '&nbsp;' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
-
-                        asciiLineHtml += `<span class="asciicell cell${iChar}" data-offset="${pos}">${ch}</span>`;
-                        hexLineHtml += `<span class="hexcell cell${iChar}" data-offset="${pos}">${this.zeroFill(bt.toString(16), 2)}</span>`;
-                        pos++;
+                        ch = bt == 32 ? '&nbsp;' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
+                        hexCh = this.zeroFill(bt.toString(16), 2);
+                    } else {
+                        ch = '&nbsp';
+                        hexCh = '&nbsp&nbsp';
                     }
+
+                    asciiLineHtml += `<span class="asciicell cell${iChar}" data-offset="${pos}">${ch}</span>`;
+                    hexLineHtml += `<span class="hexcell cell${iChar}" data-offset="${pos}">${hexCh}</span>`;
+                    pos++;
                 }
                 
                 return '<div class="hexRow">' +
@@ -80,7 +85,7 @@
                 length: dataProvider.length / bytesPerLine,
                 get: rowIdx => {
                     var byteOffset = rowIdx * bytesPerLine;
-                    var rowData = dataProvider.get(byteOffset, bytesPerLine);                    
+                    var rowData = dataProvider.get(byteOffset, Math.min(bytesPerLine, dataProvider.length - byteOffset));                    
                     return HexViewUtils.lineHtml(byteOffset, rowData);
                 }
             });
