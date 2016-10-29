@@ -22,11 +22,11 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="index.html" />
     <Content Include="js\app.js" />
     <Content Include="js\autorefresh.js" />
     <Content Include="lib\clusterizejs\clusterize.css" />
     <Content Include="lib\clusterizejs\clusterize.js" />
+    <Content Include="sandbox\fakescroll.html" />
     <Content Include="sandbox\infinitescroll.html" />
     <Content Include="sandbox\roundedrecthex.html" />
   </ItemGroup>
