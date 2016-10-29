@@ -5,13 +5,12 @@
     <meta charset="utf-8" />
     <title>HexViewer</title>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <!--<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.js"></script>-->
     <script src="/js/autorefresh.js"></script>
     <style>
-        #hexView {
-            font-family: Courier,monospace;
-            font-size: 12px;
-            height: 400px;
-        }
+        #hexView { font-family: Courier,monospace; font-size: 12px; }
+        #hexView, #hexView .content { height: 400px; }
 
         .addrPart {
             color: #ccc;
@@ -98,7 +97,9 @@
             var scrollbox = $(".scrollbox");
             var content = $(".scrollbox .content");
             var heightbox = $(".scrollbox .heightbox");
-            var totalHeight = heightbox.height();
+            var totalRowCount = Math.ceil(dataProvider.length / bytesPerLine);
+            var totalHeight = totalRowCount * rowHeight;
+            heightbox.height(totalHeight);
             var boxHeight = scrollbox.height();
             var maxScrollHeight = totalHeight - boxHeight;
             var rowCount = Math.ceil(boxHeight / rowHeight);
@@ -129,6 +130,7 @@
                             hexCh = '\u00a0\u00a0';
                             ch = '\u00a0';
                         }
+
                         row.hexPart.childNodes[iCell].innerText = hexCh;
                         row.asciiPart.childNodes[iCell].innerText = ch;
                     }
@@ -139,17 +141,19 @@
 
             $(".scrollbox").on('scroll', e => {
                 var scrollTop = scrollbox.scrollTop();
+                content.css('top', scrollTop + 'px');
                 var percent = scrollTop / maxScrollHeight;
                 topRow = Math.round(maxRow * percent);
                 console.log(scrollTop, percent);
                 refresh();
             });
+            //scrollbox.mCustomScrollbar();
         });
     </script>
     <style>
         .scrollbox { overflow-y: scroll; }
         .scrollbox .heightbox { height:10000px; background:blue; float:left }
-        .scrollbox .content {position: absolute; height: 400px;overflow: hidden }
+        .scrollbox .content { position: relative; overflow: hidden }
     </style>
 </head>
 <body>
