@@ -12,25 +12,40 @@
         #hexView { font-family: Courier,monospace; font-size: 12px; }
         #hexView, #hexView .content { height: 400px; }
 
-        .addrPart {
-            color: #ccc;
-        }
+        .addrPart { color: #ccc; }
+        .hexPart { margin-left: 8px; }
+        .asciiPart { margin-left: 8px; }
+        .hexcell.cell8 { margin-left: 8px; }
 
-        .hexPart {
-            margin-left: 8px;
-        }
+        .hexRow span { display: inline-block; }
+        .hexRow .hexcell { width: 14px; height:15px }
+        .hexRow .m0 { background: #fdd }
+        .hexRow .m1 { background: #ddf; }
+        .hexRow .m2 { background: #dfd; }
+        .hexRow .m3 { background: orange; }
+        .hexRow .m4 { background: purple; }
+        .hexRow .l0, .hexRow .l1, .hexRow .l2 { margin-top: 1px; margin-bottom: 1px }
+        .hexRow .start { margin-left:1px }
+        .hexRow .end { margin-right:1px }
 
-        .asciiPart {
-            margin-left: 8px;
-        }
+        .hexRow .l0.start { border-top-left-radius:  2px; border-bottom-left-radius:  2px }
+        .hexRow .l0.end   { border-top-right-radius: 2px; border-bottom-right-radius: 2px }
+        .hexRow .l1.start { border-top-left-radius:  3px; border-bottom-left-radius:  3px }
+        .hexRow .l1.end   { border-top-right-radius: 3px; border-bottom-right-radius: 3px }
+        .hexRow .l2.start { border-top-left-radius:  4px; border-bottom-left-radius:  4px }
+        .hexRow .l2.end   { border-top-right-radius: 4px; border-bottom-right-radius: 4px }
+        .hexRow .l3.start { border-top-left-radius:  5px; border-bottom-left-radius:  5px }
+        .hexRow .l3.end   { border-top-right-radius: 5px; border-bottom-right-radius: 5px }
+        .hexRow .l4.start { border-top-left-radius:  6px; border-bottom-left-radius:  6px }
+        .hexRow .l4.end   { border-top-right-radius: 6px; border-bottom-right-radius: 6px }
 
-        .hexcell {
-            margin: 3px;
-        }
-
-        .hexcell.cell8 {
-            margin-left: 8px;
-        }
+        /*.m0 .hexcell { color: white }*/
+        .hexRow .hexcell { padding: 0 4px }
+        .hexRow .start .hexcell { padding: 0 3px }
+        .hexRow .start .start .hexcell { padding: 0 2px }
+        .hexRow .start .start .start .hexcell { padding: 0 1px }
+        .hexRow .start .start .start .start .hexcell { padding: 0 1px }
+        .hexRow .start .start .start .start .start .hexcell { padding: 0 0 }
     </style>
     <script>
         dataProvider = {
@@ -64,7 +79,8 @@
                 return this.zeroFill(bt.toString(16), 2);
             }
 
-            static generateRow() {
+            static generateRow(level) {
+                level = level || 3;
                 function cr(tag, className) {
                     var elem = document.createElement(tag);
                     elem.className = className;
@@ -81,7 +97,20 @@
 
                 for (var iChar = 0; iChar < bytesPerLine; iChar++) {
                     hexRow.asciiPart.appendChild(cr('span', `asciicell cell${iChar}`));
-                    hexRow.hexPart.appendChild(cr('span', `hexcell cell${iChar}`));
+
+                    var cell = cr('span', `hexcell cell${iChar}`);
+                    
+                    var levels = [];
+                    var prevLevel = cell;
+                    for (var i = 0; i < level; i++) {
+                        var levelSpan = cr('span', `l${i}`);
+                        levelSpan.appendChild(prevLevel);
+                        levels[level - 1 - i] = prevLevel = levelSpan;
+                    }
+
+                    prevLevel.cell = cell;
+                    prevLevel.levels = levels;
+                    hexRow.hexPart.appendChild(prevLevel);
                 }
 
                 return hexRow;
@@ -93,6 +122,7 @@
             var rows = [];
             var topRow = 0;
             var rowHeight = 15;
+            var maxLevel = 3;
 
             var scrollbox = $(".scrollbox");
             var content = $(".scrollbox .content");
@@ -106,13 +136,31 @@
             var maxRow = Math.ceil(dataProvider.length / bytesPerLine - rowCount + 1);
             console.log(boxHeight, rowCount);
             for (var i = 0; i < rowCount; i++) {
-                var row = HexViewUtils.generateRow();
+                var row = HexViewUtils.generateRow(maxLevel);
                 rows[i] = row;
                 content.append(row);
             }
 
+            var intervals = [
+                { start: 0, end: 2 },
+                { start: 1, end: 2 },
+                { start: 2, end: 2 },
+                { start: 3, end: 6 },
+                { start: 7, end: 10 },
+                { start: 16+0, end: 16+2 },
+                { start: 16+1, end: 16+2 },
+                { start: 16+2, end: 16+2 },
+                { start: 32, end: 96 },
+            ];
+
             function refresh() {
                 var startOffset = topRow * bytesPerLine;
+
+                var intIdx;
+                for (intIdx = 0; intIdx < intervals.length; intIdx++)
+                    if (intervals[intIdx].start <= startOffset && startOffset <= intervals[intIdx].end)
+                        break;
+
                 var data = dataProvider.get(startOffset, Math.min(rowCount * bytesPerLine, dataProvider.length - startOffset));
                 for (var iRow = 0; iRow < rowCount; iRow++) {
                     var rowOffset = iRow * bytesPerLine;
@@ -121,6 +169,7 @@
 
                     for (var iCell = 0; iCell < bytesPerLine; iCell++) {
                         var dataOffset = rowOffset + iCell;
+                        var cellOffset = startOffset + dataOffset;
                         var hexCh, ch;
                         if (dataOffset < data.length) {
                             var b = data[rowOffset + iCell];
@@ -131,8 +180,22 @@
                             ch = '\u00a0';
                         }
 
-                        row.hexPart.childNodes[iCell].innerText = hexCh;
+                        var hexCell = row.hexPart.childNodes[iCell];
+                        hexCell.cell.innerText = hexCh;
                         row.asciiPart.childNodes[iCell].innerText = ch;
+                        var skipInt = 0;
+                        for (var level = 0; level < maxLevel; level++) {
+                            var int = intervals[intIdx + level];
+                            var intIn = int && int.start <= cellOffset && cellOffset <= int.end;
+                            var intStart = intIn && int.start === cellOffset;
+                            var intEnd = intIn && int.end === cellOffset;
+                            hexCell.levels[level].className = `l${maxLevel - 1 - level}` + (intIn ? ` m${level}` : "") +
+                                (intStart ? " start" : "") + (intEnd ? " end" : "");
+                            if (intEnd)
+                                skipInt++;
+                        }
+
+                        intIdx += skipInt;
                     }
                 }
             }
