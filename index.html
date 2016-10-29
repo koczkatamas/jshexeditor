@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>HexViewer</title>
+    <link rel="stylesheet" type="text/css" href="lib/clusterizejs/clusterize.css">
+    <script src="lib/clusterizejs/clusterize.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>    
+    <style>
+        #hexView {
+            font-family:Courier,monospace;
+            font-size:12px;	
+            height: 600px
+        }
+        .addrPart { color:#ccc; }
+        .hexPart { margin-left:8px }
+        .asciiPart { margin-left:8px }
+        .hexcell { margin:3px }
+        .hexcell.cell8 { margin-left:8px }
+    </style>    
+    <script>
+        function clusterizeInit(container, itemProvider){
+            var scrollElem = $("<div class='clusterize-scroll'></div>").appendTo(container);
+            var contentElem = $("<div class='contentArea' />").appendTo(scrollElem);
+            new Clusterize({ rows: itemProvider, scrollElem: scrollElem.get(0), contentElem: contentElem.get(0) });
+        }
+        
+        dataProvider = {
+            length: 0x100000,
+            get: (offset, length) => {
+                var res = [];
+                for(var i = 0; i < length; i++)
+                    res.push((((offset + i) * 12345) % 98765) % 256);
+                return res;
+            }
+        }
+        
+        class HexViewUtils {
+            static zeroFill(str, padLen, padChar) {
+                var pad_char = typeof padChar !== 'undefined' ? padChar : '0';
+                var pad = new Array(1 + padLen).join(pad_char);
+                return (pad + str).slice(-pad.length);
+            }
+        
+            static addrHex(address){
+                //var addrHexLen = Math.ceil(Math.log(this.buffer.length) / Math.log(16));
+                var addrHexLen = 8;
+                return this.zeroFill(address.toString(16), addrHexLen);
+            }
+            
+            static lineHtml(lineAddr, bytes){
+                var asciiLineHtml = "", hexLineHtml = "", pos = 0;
+
+                for (var iChar = 0; iChar < bytesPerLine; iChar++) {
+                    if (pos <= bytes.length) {
+                        var bt = bytes[pos];
+                        //var ch = bt == 32 ? '&nbsp;' : bt >= 32 && bt < 127 ? String.fromCharCode(bt) : '.';
+                        var ch = bt == 32 ? '&nbsp;' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
+
+                        asciiLineHtml += `<span class="asciicell cell${iChar}" data-offset="${pos}">${ch}</span>`;
+                        hexLineHtml += `<span class="hexcell cell${iChar}" data-offset="${pos}">${this.zeroFill(bt.toString(16), 2)}</span>`;
+                        pos++;
+                    }
+                }
+                
+                return '<div class="hexRow">' +
+                    '<span class="addrPart">' + this.addrHex(lineAddr) + '</span>' + 
+                    '<span class="hexPart">' + hexLineHtml + '</span>' +
+                    '<span class="asciiPart">' + asciiLineHtml + '</span>' +
+                    '</div>';
+            }
+            
+        }
+        
+    
+        var bytesPerLine = 16;
+        $(() => {
+            clusterizeInit('#hexView', {
+                length: dataProvider.length / bytesPerLine,
+                get: rowIdx => {
+                    var byteOffset = rowIdx * bytesPerLine;
+                    var rowData = dataProvider.get(byteOffset, bytesPerLine);                    
+                    return HexViewUtils.lineHtml(byteOffset, rowData);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>HexViewer</h1>
+    <div id="hexView">
+        
+    </div>
+</body>
+</html>

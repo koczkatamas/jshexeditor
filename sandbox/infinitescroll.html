@@ -1,0 +1,83 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script>
+        itemProvider = {
+            get(idx){
+                return "<div>Line #" + (idx+1) + "</div>";
+            },
+            count: 4000
+        };
+    
+        $(() => {
+            var itemHeight = 25;
+            var scrollbox = $(".scrollbox");
+            var content = $(".scrollbox .content");
+            var heightbox = $(".scrollbox .heightbox");
+            var totalHeight = itemHeight * itemProvider.count;
+            var outRangePercent = 20;
+            heightbox.css('height', totalHeight + 'px');
+            
+            function getPercent(){
+                var scrollTop = scrollbox.scrollTop();
+                var scrollboxHeight = scrollbox.height();
+                var percent = scrollTop / (totalHeight - scrollboxHeight);
+                return percent;
+            }
+            
+            var lowerBound, upperBound;
+            
+            function refreshRegionIfNeeded(){
+                var scrollTop = scrollbox.scrollTop();
+                if(scrollTop <= lowerBound || scrollTop >= upperBound){
+                    //console.log(lowerBound, scrollTop, upperBound);
+                    refreshRegion();
+                }
+            }
+            
+            function refreshRegion(){
+                var scrollTop = scrollbox.scrollTop();
+                var scrollboxHeight = scrollbox.height();
+                var regionHeight = scrollboxHeight * 3;
+                var regionItemCount = Math.floor(regionHeight / itemHeight);
+                var percent = getPercent();
+                var currItemIdx = Math.round(percent * itemProvider.count);
+                var regionTopIdx = Math.floor(currItemIdx - regionItemCount / 3);
+                lowerBound = Math.ceil(scrollTop + scrollboxHeight * (outRangePercent / 100));
+                upperBound = Math.ceil(scrollTop + scrollboxHeight * (2 - outRangePercent / 100));
+                var items = [];
+                for(var i = 0; i < regionItemCount; i++){
+                    var itemIdx = regionTopIdx + i;
+                    if(itemIdx >= 0 && itemIdx < itemProvider.count)
+                        items.push(itemProvider.get(itemIdx));
+                }
+                var itemHtml = items.join('');
+                content.html(itemHtml);
+                var contentHeight = content.height();
+                content.css('top', (scrollTop + contentHeight * percent) + 'px');
+                //console.log(scrollTop, regionHeight, regionItemCount, currItemIdx, regionTopIdx);
+            }
+            
+            refreshRegion();
+            
+            $(".scrollbox").on('scroll', e => {
+                refreshRegionIfNeeded();
+                //content.css('top', scrollTop + 'px');
+                //console.log(scrollTop, height, totalHeight, percent);
+            });
+            console.log($(".scrollbox"));
+        });
+    </script>
+    <style>
+        .scrollbox { background:red; overflow-y: scroll; height:100% }
+        .scrollbox .heightbox { height:10000px; background:blue; float:left }
+        .scrollbox .content { position:relative }
+    </style>
+</head>
+<body>
+    <div class="scrollbox">
+        <div class="heightbox"></div>
+        <div class="content"></div>
+    </div>
+</body>
+</html>
