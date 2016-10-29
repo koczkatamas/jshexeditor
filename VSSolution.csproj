@@ -23,11 +23,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="index.html" />
+    <Content Include="js\app.js" />
+    <Content Include="js\autorefresh.js" />
     <Content Include="lib\clusterizejs\clusterize.css" />
     <Content Include="lib\clusterizejs\clusterize.js" />
+    <Content Include="sandbox\infinitescroll.html" />
+    <Content Include="sandbox\roundedrecthex.html" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\app.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="js\app.js.map" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
