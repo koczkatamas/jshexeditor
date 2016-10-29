@@ -28,6 +28,7 @@
     <Content Include="lib\clusterizejs\clusterize.js" />
     <Content Include="sandbox\fakescroll.html" />
     <Content Include="sandbox\infinitescroll.html" />
+    <Content Include="sandbox\roundedrecthex2.html" />
     <Content Include="sandbox\roundedrecthex.html" />
   </ItemGroup>
   <ItemGroup>

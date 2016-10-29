@@ -1,0 +1,61 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="/js/autorefresh.js"></script>
+    <style>
+         body { font-family:Courier,monospace; font-size:12px; }
+        .hexRow span { display: inline-block; }
+        .hexRow { margin-top:5px }
+        .cell { color: white; padding: 0 3px }
+        .l0 { background: red }
+        .l1 { background: blue; }
+        .l2 { background: green; }
+        .l1, .l2 { margin-top: 1px; margin-bottom: 1px }
+        .l1.lX { padding-top: 1px; padding-bottom:1px }
+        .l0.lX { padding-top: 2px; padding-bottom:2px }
+        .start { margin-left:1px }
+        .end { margin-right:1px }
+
+        .l0.start { border-top-left-radius:  4px; border-bottom-left-radius:  4px }
+        .l0.end   { border-top-right-radius: 4px; border-bottom-right-radius: 4px }
+        .l1.start { border-top-left-radius:  3px; border-bottom-left-radius:  3px }
+        .l1.end   { border-top-right-radius: 3px; border-bottom-right-radius: 3px }
+        .l2.start { border-top-left-radius:  2px; border-bottom-left-radius:  2px }
+        .l2.end   { border-top-right-radius: 2px; border-bottom-right-radius: 2px }
+    </style>
+</head>
+<body>
+    
+<div id="hr1" class="hexRow">
+    <span class="c00 l0 lX start"><span class="cell">AB</span></span>
+    <span class="c01 l0"><span class="l1 lX start end"><span class="cell">CD</span></span></span>
+    <span class="c02 l0 lX end"><span class="cell">EF</span></span>
+</div>
+
+<div id="hr2" class="hexRow">
+    <span class="c00 l0 lX start"><span class="cell">AB</span></span>
+    <span class="c01 l0"><span class="l1 lX start"><span class="cell">CD</span></span></span>
+    <span class="c02 l0 end"><span class="l1 lX end"><span class="cell">EF</span></span></span>
+</div>
+
+<div id="hr3" class="hexRow">
+    <span class="c00 l0 lX start"><span class="cell">AB</span></span>
+    <span class="c01 l0"><span class="l1 lX start"><span class="cell">CD</span></span></span>
+    <span class="c02 l0"><span class="l1"><span class="l2 lX start"><span class="cell">EF</span></span></span></span>
+    <span class="c03 l0 end"><span class="l1 end"><span class="l2 lX end"><span class="cell">11</span></span></span></span>
+</div>
+
+<div id="hr4" class="hexRow">
+    <span class="c00 l0 lX start"><span class="cell">AB</span></span>
+    <span class="c01 l0"><span class="l1 lX start"><span class="cell">CD</span></span></span>
+    <span class="c02 l0"><span class="l1 end"><span class="l2 lX start end"><span class="cell">EF</span></span></span></span>
+    <span class="c03 l0 end"><span class="l1 start end"><span class="l2 lX start end"><span class="cell">11</span></span></span></span>
+</div>
+
+<script>
+    var hexRow = $('.hexRow');
+    hexRow.each(function() { $(this).html($(this).html().replace(/span>\s*<span/g, 'span><span')); });
+</script>
+
+</body>
+</html>

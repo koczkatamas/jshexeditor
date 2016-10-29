@@ -143,9 +143,12 @@
                 var scrollTop = scrollbox.scrollTop();
                 content.css('top', scrollTop + 'px');
                 var percent = scrollTop / maxScrollHeight;
-                topRow = Math.round(maxRow * percent);
+                var newTopRow = Math.round(maxRow * percent);
                 console.log(scrollTop, percent);
-                refresh();
+                if (topRow !== newTopRow) {
+                    topRow = newTopRow;
+                    refresh();
+                }
             });
             //scrollbox.mCustomScrollbar();
         });
