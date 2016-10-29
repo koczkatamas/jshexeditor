@@ -59,7 +59,7 @@
                     return elem;
                 }
 
-                var addrPart = cr('span', 'addPart');
+                var addrPart = cr('span', 'addrPart');
                 addrPart.innerText = this.addrHex(lineAddr);
                 var hexPart = cr('span', 'hexPart');
                 var asciiPart = cr('span', 'asciiPart');
@@ -113,6 +113,25 @@
                     '<span class="asciiPart">' + asciiLineHtml + '</span>' +
                     '</div>';
             }
+
+            static lineCanvas(lineAddr, bytes) {
+                var canvas = document.createElement('canvas');
+                canvas.height = 12;
+                canvas.width = 500;
+                var ctx = canvas.getContext("2d");
+                ctx.font = "12px Courier";
+
+                ctx.fillText(this.addrHex(lineAddr), 0, 10);
+                for (var iChar = 0; iChar < bytesPerLine && iChar < bytes.length; iChar++) {
+                    var bt = bytes[iChar];
+                    var ch = bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
+                    var hexCh = this.zeroFill(bt.toString(16), 2);
+                    ctx.fillText(hexCh, 70 + iChar * 18 + (iChar >= 8 ? 5 : 0), 10);
+                    ctx.fillText(ch, 380 + iChar * 8, 10);
+                }
+
+                return canvas;
+            }
         }
     
         var bytesPerLine = 16;
@@ -122,7 +141,7 @@
                 get: rowIdx => {
                     var byteOffset = rowIdx * bytesPerLine;
                     var rowData = dataProvider.get(byteOffset, Math.min(bytesPerLine, dataProvider.length - byteOffset));                    
-                    return HexViewUtils.lineObj(byteOffset, rowData);
+                    return HexViewUtils.lineCanvas(byteOffset, rowData);
                 }
             });
         });
