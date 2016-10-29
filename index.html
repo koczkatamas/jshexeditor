@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="lib/clusterizejs/clusterize.css">
     <script src="lib/clusterizejs/clusterize.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>    
+    <script src="/js/autorefresh.js"></script>
     <style>
         #hexView {
             font-family:Courier,monospace;
@@ -27,7 +28,7 @@
         }
         
         dataProvider = {
-            length: 0x100 - 3,
+            length: 0x10000 - 3,
             get(offset, length){
                 var res = [];
                 for (var i = 0; i < length; i++)
@@ -48,27 +49,54 @@
                 var addrHexLen = 8;
                 return this.zeroFill(address.toString(16), addrHexLen);
             }
-            
-            static lineHtml(lineAddr, bytes){
-                var asciiLineHtml = "", hexLineHtml = "", pos = 0;
 
+            static lineObj(lineAddr, bytes){
+                var pos = 0;
+
+                function cr(tag){ return $(document.createElement(tag)); }
+
+                var addrPart = cr('span').addClass("addPart").text(this.addrHex(lineAddr));
+                var hexPart = cr('span').addClass("hexPart");
+                var asciiPart = cr('span').addClass("asciiPart");
+                var hexRow = cr('div').addClass("hexRow").append(addrPart, hexPart, asciiPart);
+                
+                for (var iChar = 0; iChar < bytesPerLine; iChar++) {
+                    var asciiCell = cr('span').addClass(`asciicell cell${iChar}`).appendTo(asciiPart);
+                    var hexCell = cr('span').addClass(`hexcell cell${iChar}`).appendTo(hexPart);
+                    if (pos < bytes.length) {
+                        var bt = bytes[pos];
+                        asciiCell.text(bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt));
+                        hexCell.text(this.zeroFill(bt.toString(16), 2));
+                    } else {
+                        asciiCell.text('\u00a0');
+                        hexCell.text('\u00a0\u00a0');
+                    }
+
+                    pos++;
+                }
+
+                return hexRow.get(0);
+            }
+
+            static lineHtml(lineAddr, bytes) {
+                var asciiLineHtml = "", hexLineHtml = "", pos = 0;
                 for (var iChar = 0; iChar < bytesPerLine; iChar++) {
                     var ch, hexCh;
                     if (pos < bytes.length) {
                         var bt = bytes[pos];
                         //var ch = bt == 32 ? '&nbsp;' : bt >= 32 && bt < 127 ? String.fromCharCode(bt) : '.';
-                        ch = bt == 32 ? '&nbsp;' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
+                        ch = bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
                         hexCh = this.zeroFill(bt.toString(16), 2);
                     } else {
-                        ch = '&nbsp';
-                        hexCh = '&nbsp&nbsp';
+                        ch = '\u00a0';
+                        hexCh = '\u00a0\u00a0';
                     }
 
                     asciiLineHtml += `<span class="asciicell cell${iChar}" data-offset="${pos}">${ch}</span>`;
                     hexLineHtml += `<span class="hexcell cell${iChar}" data-offset="${pos}">${hexCh}</span>`;
                     pos++;
                 }
-                
+
                 return '<div class="hexRow">' +
                     '<span class="addrPart">' + this.addrHex(lineAddr) + '</span>' + 
                     '<span class="hexPart">' + hexLineHtml + '</span>' +
