@@ -38,10 +38,10 @@
         }
         
         class HexViewUtils {
-            static zeroFill(str, padLen, padChar) {
-                var pad_char = typeof padChar !== 'undefined' ? padChar : '0';
-                var pad = new Array(1 + padLen).join(pad_char);
-                return (pad + str).slice(-pad.length);
+            static zeroFill(str, padLen) {
+                while (str.length < padLen)
+                    str = '0' + str;
+                return str;
             }
         
             static addrHex(address){
@@ -53,29 +53,39 @@
             static lineObj(lineAddr, bytes){
                 var pos = 0;
 
-                function cr(tag){ return $(document.createElement(tag)); }
+                function cr(tag, className) {
+                    var elem = document.createElement(tag);
+                    elem.className = className;
+                    return elem;
+                }
 
-                var addrPart = cr('span').addClass("addPart").text(this.addrHex(lineAddr));
-                var hexPart = cr('span').addClass("hexPart");
-                var asciiPart = cr('span').addClass("asciiPart");
-                var hexRow = cr('div').addClass("hexRow").append(addrPart, hexPart, asciiPart);
+                var addrPart = cr('span', 'addPart');
+                addrPart.innerText = this.addrHex(lineAddr);
+                var hexPart = cr('span', 'hexPart');
+                var asciiPart = cr('span', 'asciiPart');
+                var hexRow = cr('div', 'hexRow');
+                hexRow.appendChild(addrPart);
+                hexRow.appendChild(hexPart);
+                hexRow.appendChild(asciiPart);
                 
                 for (var iChar = 0; iChar < bytesPerLine; iChar++) {
-                    var asciiCell = cr('span').addClass(`asciicell cell${iChar}`).appendTo(asciiPart);
-                    var hexCell = cr('span').addClass(`hexcell cell${iChar}`).appendTo(hexPart);
+                    var asciiCell = cr('span', `asciicell cell${iChar}`);
+                    var hexCell = cr('span', `hexcell cell${iChar}`);
+                    asciiPart.appendChild(asciiCell);
+                    hexPart.appendChild(hexCell);
                     if (pos < bytes.length) {
                         var bt = bytes[pos];
-                        asciiCell.text(bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt));
-                        hexCell.text(this.zeroFill(bt.toString(16), 2));
+                        asciiCell.innerText = bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
+                        hexCell.innerText = this.zeroFill(bt.toString(16), 2);
                     } else {
-                        asciiCell.text('\u00a0');
-                        hexCell.text('\u00a0\u00a0');
+                        asciiCell.innerText = '\u00a0';
+                        hexCell.innerText = '\u00a0\u00a0';
                     }
 
                     pos++;
                 }
 
-                return hexRow.get(0);
+                return hexRow;
             }
 
             static lineHtml(lineAddr, bytes) {
@@ -112,7 +122,7 @@
                 get: rowIdx => {
                     var byteOffset = rowIdx * bytesPerLine;
                     var rowData = dataProvider.get(byteOffset, Math.min(bytesPerLine, dataProvider.length - byteOffset));                    
-                    return HexViewUtils.lineHtml(byteOffset, rowData);
+                    return HexViewUtils.lineObj(byteOffset, rowData);
                 }
             });
         });
