@@ -121,13 +121,25 @@
                 var ctx = canvas.getContext("2d");
                 ctx.font = "12px Courier";
 
-                ctx.fillText(this.addrHex(lineAddr), 0, 10);
-                for (var iChar = 0; iChar < bytesPerLine && iChar < bytes.length; iChar++) {
-                    var bt = bytes[iChar];
-                    var ch = bt == 32 ? '\u00a0' : bt < 32 || (0x7f <= bt && bt <= 0xa0) || bt == 0xad ? '.' : String.fromCharCode(bt);
-                    var hexCh = this.zeroFill(bt.toString(16), 2);
-                    ctx.fillText(hexCh, 70 + iChar * 18 + (iChar >= 8 ? 5 : 0), 10);
-                    ctx.fillText(ch, 380 + iChar * 8, 10);
+                var charSize = ctx.measureText('A');
+
+                var x = 0;
+                function w(text, pad) {
+                    ctx.fillText(text, x, 10);
+                    //var textWidth = ctx.measureText(text).width;
+                    var textWidth = charSize.width * text.length;
+                    x += textWidth + (pad || 0);
+                }
+                
+                w(this.addrHex(lineAddr), 10);
+
+                for (var i = 0; i < bytes.length; i++)
+                    w(this.zeroFill(bytes[i].toString(16), 2), 4 + (i == 7 ? 5 : 0));
+                x += 10;
+
+                for (var i = 0; i < bytes.length; i++) {
+                    var b = bytes[i];
+                    w(b == 32 ? '\u00a0' : b < 32 || (0x7f <= b && b <= 0xa0) || b == 0xad ? '.' : String.fromCharCode(b));
                 }
 
                 return canvas;
