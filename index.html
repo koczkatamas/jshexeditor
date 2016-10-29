@@ -27,7 +27,7 @@
         }
         
         dataProvider = {
-            length: 0x100000-3,
+            length: 0x100 - 3,
             get(offset, length){
                 var res = [];
                 for (var i = 0; i < length; i++)
@@ -82,7 +82,7 @@
         var bytesPerLine = 16;
         $(() => {
             clusterizeInit('#hexView', {
-                length: dataProvider.length / bytesPerLine,
+                length: Math.ceil(dataProvider.length / bytesPerLine),
                 get: rowIdx => {
                     var byteOffset = rowIdx * bytesPerLine;
                     var rowData = dataProvider.get(byteOffset, Math.min(bytesPerLine, dataProvider.length - byteOffset));                    
